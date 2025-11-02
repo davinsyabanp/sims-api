@@ -1,0 +1,643 @@
+---
+alwaysApply: true
+---
+### **3. GET /profile**
+**Private Endpoint (Requires Auth)**
+
+**Headers:**
+```
+Authorization: Bearer {token}
+```
+
+**Success Response (200):**
+```json
+{
+  "status": 0,
+  "message": "Sukses",
+  "data": {
+    "email": "user@nutech-integrasi.com",
+    "first_name": "User",
+    "last_name": "Nutech",
+    "profile_image": "https://yoururlapi.com/profile.jpeg"
+  }
+}
+```
+
+**Error Response (401):**
+```json
+{
+  "status": 108,
+  "message": "Token tidak tidak valid atau kadaluwarsa",
+  "data": null
+}
+```
+
+---
+
+### **4. PUT /profile/update**
+**Private Endpoint (Requires Auth)**
+
+**Request Body:**
+```json
+{
+  "first_name": "User Edited",
+  "last_name": "Nutech Edited"
+}
+```
+
+**Success Response (200):**
+```json
+{
+  "status": 0,
+  "message": "Update Pofile berhasil",
+  "data": {
+    "email": "user@nutech-integrasi.com",
+    "first_name": "User Edited",
+    "last_name": "Nutech Edited",
+    "profile_image": "https://yoururlapi.com/profile.jpeg"
+  }
+}
+```
+
+**Error Response (401):**
+```json
+{
+  "status": 108,
+  "message": "Token tidak tidak valid atau kadaluwarsa",
+  "data": null
+}
+```
+
+---
+
+### **5. PUT /profile/image**
+**Private Endpoint (Requires Auth)**
+
+**Request:**
+- Content-Type: multipart/form-data
+- Field name: `file`
+- Allowed formats: JPEG, PNG only
+
+**Success Response (200):**
+```json
+{
+  "status": 0,
+  "message": "Update Profile Image berhasil",
+  "data": {
+    "email": "user@nutech-integrasi.com",
+    "first_name": "User Edited",
+    "last_name": "Nutech Edited",
+    "profile_image": "https://yoururlapi.com/profile-updated.jpeg"
+  }
+}
+```
+
+**Error Responses:**
+```json
+// 400 - Invalid image format
+{
+  "status": 102,
+  "message": "Format Image tidak sesuai",
+  "data": null
+}
+
+// 401 - Unauthorized
+{
+  "status": 108,
+  "message": "Token tidak tidak valid atau kadaluwarsa",
+  "data": null
+}
+```
+
+---
+
+### **6. GET /banner**
+**Public Endpoint (No Auth)**
+
+**Success Response (200):**
+```json
+{
+  "status": 0,
+  "message": "Sukses",
+  "data": [
+    {
+      "banner_name": "Banner 1",
+      "banner_image": "https://nutech-integrasi.app/dummy.jpg",
+      "description": "Lerem Ipsum Dolor sit amet"
+    }
+    // ... 6 banners total
+  ]
+}
+```
+
+**Important Notes:**
+- ✅ Data should come from database (not hardcoded)
+- ✅ No need to create CRUD module for banners
+
+---
+
+### **7. GET /services**
+**Private Endpoint (Requires Auth)**
+
+**Success Response (200):**
+```json
+{
+  "status": 0,
+  "message": "Sukses",
+  "data": [
+    {
+      "service_code": "PAJAK",
+      "service_name": "Pajak PBB",
+      "service_icon": "https://nutech-integrasi.app/dummy.jpg",
+      "service_tariff": 40000
+    }
+    // ... 12 services total
+  ]
+}
+```
+
+**Error Response (401):**
+```json
+{
+  "status": 108,
+  "message": "Token tidak tidak valid atau kadaluwarsa",
+  "data": null
+}
+```
+
+**Important Notes:**
+- ✅ Data should come from database (not hardcoded)
+- ✅ No need to create CRUD module for services
+
+---
+
+### **8. GET /balance**
+**Private Endpoint (Requires Auth)**
+
+**Success Response (200):**
+```json
+{
+  "status": 0,
+  "message": "Get Balance Berhasil",
+  "data": {
+    "balance": 1000000
+  }
+}
+```
+
+**Error Response (401):**
+```json
+{
+  "status": 108,
+  "message": "Token tidak tidak valid atau kadaluwarsa",
+  "data": null
+}
+```
+
+---
+
+### **9. POST /topup**
+**Private Endpoint (Requires Auth)**
+
+**Request Body:**
+```json
+{
+  "top_up_amount": 1000000
+}
+```
+
+**Business Rules:**
+- ✅ Balance increases by top_up_amount
+- ✅ transaction_type = 'TOPUP' in database
+- ✅ Amount must be number and > 0
+
+**Success Response (200):**
+```json
+{
+  "status": 0,
+  "message": "Top Up Balance berhasil",
+  "data": {
+    "balance": 2000000
+  }
+}
+```
+
+**Error Responses:**
+```json
+// 400 - Invalid amount
+{
+  "status": 102,
+  "message": "Paramter amount hanya boleh angka dan tidak boleh lebih kecil dari 0",
+  "data": null
+}
+
+// 401 - Unauthorized
+{
+  "status": 108,
+  "message": "Token tidak tidak valid atau kadaluwarsa",
+  "data": null
+}
+```
+
+---
+
+### **10. POST /transaction**
+**Private Endpoint (Requires Auth)**
+
+**Request Body:**
+```json
+{
+  "service_code": "PULSA"
+}
+```
+
+**Business Rules:**
+- ✅ Check balance is sufficient
+- ✅ Balance decreases by service_tariff
+- ✅ transaction_type = 'PAYMENT' in database
+- ✅ Invoice number format is flexible (generate freely)
+
+**Success Response (200):**
+```json
+{
+  "status": 0,
+  "message": "Transaksi berhasil",
+  "data": {
+    "invoice_number": "INV17082023-001",
+    "service_code": "PULSA",
+    "service_name": "Pulsa",
+    "transaction_type": "PAYMENT",
+    "total_amount": 40000,
+    "created_on": "2023-08-17T10:10:10.000Z"
+  }
+}
+```
+
+**Error Responses:**
+```json
+// 400 - Service not found
+{
+  "status": 102,
+  "message": "Service ataus Layanan tidak ditemukan",
+  "data": null
+}
+
+// 401 - Unauthorized
+{
+  "status": 108,
+  "message": "Token tidak tidak valid atau kadaluwarsa",
+  "data": null
+}
+```
+
+---
+
+### **11. GET /transaction/history**
+**Private Endpoint (Requires Auth)**
+
+**Query Parameters:**
+- `offset` (integer, optional): Starting position
+- `limit` (integer, optional): Number of records (if not sent, return all)
+
+**Example:** `/transaction/history?offset=0&limit=3`
+
+**Business Rules:**
+- ✅ Order by created_on DESC (newest first)
+
+**Success Response (200):**
+```json
+{
+  "status": 0,
+  "message": "Get History Berhasil",
+  "data": {
+    "offset": 0,
+    "limit": 3,
+    "records": [
+      {
+        "invoice_number": "INV17082023-001",
+        "transaction_type": "TOPUP",
+        "description": "Top Up balance",
+        "total_amount": 100000,
+        "created_on": "2023-08-17T10:10:10.000Z"
+      }
+    ]
+  }
+}
+```
+
+**Error Response (401):**
+```json
+{
+  "status": 108,
+  "message": "Token tidak tidak valid atau kadaluwarsa",
+  "data": null
+}
+```
+
+## ERROR CODES REFERENCE
+
+```javascript
+const ERROR_CODES = {
+  SUCCESS: 0,
+  INVALID_PARAMETER: 102,      // Invalid format, missing required field
+  INVALID_CREDENTIALS: 103,     // Wrong username/password
+  UNAUTHORIZED: 108             // Invalid or expired token
+};
+```
+
+## TECHNICAL STACK
+
+- **Runtime**: Node.js (v18+)
+- **Framework**: Express.js
+- **Database**: MySQL (8.0+)
+- **Authentication**: JWT (jsonwebtoken)
+- **Password Hashing**: bcrypt
+- **File Upload**: multer
+- **Environment Variables**: dotenv
+- **Database Driver**: mysql2/promise
+
+**Install Dependencies:**
+```bash
+npm install express mysql2 bcrypt jsonwebtoken dotenv cors helmet multer
+npm install --save-dev nodemon
+```
+
+## CRITICAL CODING GUIDELINES
+
+### 1. RAW QUERY WITH PREPARED STATEMENTS (MANDATORY!)
+```javascript
+const pool = require('../config/database');
+
+// ✅ CORRECT - Always use prepared statements
+const [rows] = await pool.query('SELECT * FROM users WHERE email = ?', [email]);
+
+// ✅ CORRECT - Multiple parameters
+const [result] = await pool.query(
+  'INSERT INTO users (email, first_name, last_name, password) VALUES (?, ?, ?, ?)',
+  [email, firstName, lastName, hashedPassword]
+);
+
+// ❌ WRONG - Never concatenate SQL
+const query = `SELECT * FROM users WHERE email = '${email}'`; // SQL Injection!
+```
+
+### 2. JWT IMPLEMENTATION
+```javascript
+const jwt = require('jsonwebtoken');
+
+// Generate token (login)
+const token = jwt.sign(
+  { email: user.email },  // Payload must contain email
+  process.env.JWT_SECRET,
+  { expiresIn: '12h' }    // MUST be 12 hours
+);
+
+// Verify token (middleware)
+const authMiddleware = (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({
+        status: 108,
+        message: 'Token tidak tidak valid atau kadaluwarsa',
+        data: null
+      });
+    }
+    
+    const token = authHeader.replace('Bearer ', '');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded; // Contains email from payload
+    next();
+  } catch (error) {
+    return res.status(401).json({
+      status: 108,
+      message: 'Token tidak tidak valid atau kadaluwarsa',
+      data: null
+    });
+  }
+};
+```
+
+### 3. DATABASE TRANSACTION (Balance Operations)
+```javascript
+// CRITICAL: Use database transaction with FOR UPDATE lock
+
+async function performTransaction(userId, serviceCode) {
+  const connection = await pool.getConnection();
+  
+  try {
+    await connection.beginTransaction();
+    
+    // Lock the balance row
+    const [balanceRows] = await connection.query(
+      'SELECT balance FROM balances WHERE user_id = ? FOR UPDATE',
+      [userId]
+    );
+    
+    const currentBalance = balanceRows[0].balance;
+    
+    // Get service tariff
+    const [serviceRows] = await connection.query(
+      'SELECT service_tariff, service_name FROM services WHERE service_code = ?',
+      [serviceCode]
+    );
+    
+    if (serviceRows.length === 0) {
+      throw new Error('Service not found');
+    }
+    
+    const tariff = serviceRows[0].service_tariff;
+    
+    // Check sufficient balance
+    if (currentBalance < tariff) {
+      throw new Error('Insufficient balance');
+    }
+    
+    // Update balance (deduct)
+    await connection.query(
+      'UPDATE balances SET balance = balance - ? WHERE user_id = ?',
+      [tariff, userId]
+    );
+    
+    // Generate invoice number
+    const invoiceNumber = generateInvoiceNumber();
+    
+    // Insert transaction record
+    await connection.query(
+      `INSERT INTO transactions 
+       (user_id, invoice_number, transaction_type, service_code, total_amount, description, created_on) 
+       VALUES (?, ?, 'PAYMENT', ?, ?, ?, NOW())`,
+      [userId, invoiceNumber, serviceCode, tariff, serviceRows[0].service_name]
+    );
+    
+    await connection.commit();
+    
+    return {
+      invoiceNumber,
+      serviceCode,
+      serviceName: serviceRows[0].service_name,
+      totalAmount: tariff
+    };
+    
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+}
+```
+
+### 4. FILE UPLOAD (Profile Image)
+```javascript
+const multer = require('multer');
+const path = require('path');
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/');
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, 'profile-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const fileFilter = (req, file, cb) => {
+  const allowedTypes = /jpeg|jpg|png/;
+  const mimetype = allowedTypes.test(file.mimetype);
+  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+  
+  if (mimetype && extname) {
+    return cb(null, true);
+  } else {
+    cb(new Error('Format Image tidak sesuai'));
+  }
+};
+
+const upload = multer({
+  storage: storage,
+  fileFilter: fileFilter,
+  limits: { fileSize: 1024 * 1024 } // 1MB
+});
+
+module.exports = upload;
+```
+
+### 5. INPUT VALIDATION
+```javascript
+// Email validation
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+if (!emailRegex.test(email)) {
+  return res.status(400).json({
+    status: 102,
+    message: 'Paramter email tidak sesuai format',
+    data: null
+  });
+}
+
+// Password length validation
+if (!password || password.length < 8) {
+  return res.status(400).json({
+    status: 102,
+    message: 'Password minimal 8 karakter',
+    data: null
+  });
+}
+
+// Amount validation
+if (isNaN(top_up_amount) || top_up_amount <= 0) {
+  return res.status(400).json({
+    status: 102,
+    message: 'Paramter amount hanya boleh angka dan tidak boleh lebih kecil dari 0',
+    data: null
+  });
+}
+```
+
+### 6. INVOICE NUMBER GENERATION
+```javascript
+// Format: INV{DDMMYYYY}-{SEQUENCE}
+function generateInvoiceNumber() {
+  const now = new Date();
+  const day = String(now.getDate()).padStart(2, '0');
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const year = now.getFullYear();
+  const timestamp = now.getTime();
+  
+  return `INV${day}${month}${year}-${timestamp}`;
+}
+```
+
+## ASSESSMENT CRITERIA (PRIORITY)
+
+1. ✅ **API Compliance** - Response format, field names, error messages EXACT match Swagger
+2. ✅ **Database Design** - Proper schema, indexes, constraints
+3. ✅ **Raw Query** - All queries use prepared statements (NO ORM)
+4. ✅ **Balance Accuracy** - Topup/transaction calculations are correct
+5. ✅ **Error Handling** - All error cases handled with correct status codes
+6. ✅ **Code Quality** - Clean, readable, well-structured
+
+## ENVIRONMENT VARIABLES
+
+```env
+# Server
+PORT=3000
+NODE_ENV=development
+
+# Database
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=
+DB_NAME=sims_ppob_db
+
+# JWT
+JWT_SECRET=your_secret_key_min_32_characters_long
+JWT_EXPIRES_IN=12h
+
+# App URL
+APP_URL=http://localhost:3000
+```
+
+## IMPLEMENTATION CHECKLIST
+
+### Module Membership ✅
+- [ ] POST /registration - validate email, password >= 8 chars, hash password
+- [ ] POST /login - validate credentials, generate JWT with email payload, 12h expiry
+- [ ] GET /profile - verify JWT, return user data (no password)
+- [ ] PUT /profile/update - verify JWT, update first_name & last_name only
+- [ ] PUT /profile/image - verify JWT, validate jpeg/png, save file, return URL
+
+### Module Information ✅
+- [ ] GET /banner - public, return 6 banners from database
+- [ ] GET /services - private, verify JWT, return 12 services from database
+
+### Module Transaction ✅
+- [ ] GET /balance - verify JWT, return user balance
+- [ ] POST /topup - verify JWT, validate amount > 0, use transaction, type=TOPUP
+- [ ] POST /transaction - verify JWT, check service exists, check balance, use transaction with FOR UPDATE, type=PAYMENT
+- [ ] GET /transaction/history - verify JWT, pagination with offset/limit, order by created_on DESC
+
+## HOW TO HELP ME
+
+When I ask you to:
+1. **Generate code** - Use raw SQL with prepared statements, follow Swagger exactly
+2. **Implement endpoint** - Match exact field names, messages, status codes from Swagger
+3. **Fix bugs** - Check SQL injection, balance calculation, token validation
+4. **Review code** - Verify Swagger compliance, error handling, security
+5. **Debug** - Transaction issues, authentication, file upload
+
+**CRITICAL REMINDERS:**
+- Every response field name must EXACTLY match Swagger (case-sensitive)
+- Every error message must EXACTLY match Swagger (including typos like "Paramter")
+- JWT payload MUST contain email, expiry MUST be 12h
+- Use database transactions with FOR UPDATE for balance operations
+- Transaction description field can be service_name or custom text
+- Invoice number format is flexible (generate any unique format)
+- File upload field name is "file"
+- Limit parameter is optional in history - if not sent, return all records
+
+---
+
+**Let's build this SIMS PPOB API following Swagger specification EXACTLY!**
