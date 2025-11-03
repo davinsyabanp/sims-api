@@ -1,9 +1,4 @@
 /**
- * Helper Utilities
- * Common helper functions for the SIMS PPOB API
- */
-
-/**
  * Generate Invoice Number
  * Format: INV{DDMMYYYY}-{TIMESTAMP}
  * @returns {string} Invoice number

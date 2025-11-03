@@ -1,13 +1,3 @@
-/**
- * Multer File Upload Middleware
- * Handles profile image uploads
- * 
- * Follows exact Swagger specifications:
- * - Field name: file
- * - Allowed formats: JPEG, PNG only
- * - Max file size: 1MB
- */
-
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
