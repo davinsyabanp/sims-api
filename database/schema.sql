@@ -73,4 +73,3 @@ BEGIN
     INSERT INTO balances (user_id, balance) VALUES (NEW.id, 0.00);
 END//
 DELIMITER ;
-

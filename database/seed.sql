@@ -23,4 +23,3 @@ INSERT INTO services (service_code, service_name, service_icon, service_tariff) 
 ('VOUCHER_MAKANAN', 'Voucher Makanan', 'https://nutech-integrasi.app/dummy.jpg', 100000),
 ('QURBAN', 'Qurban', 'https://nutech-integrasi.app/dummy.jpg', 200000),
 ('ZAKAT', 'Zakat', 'https://nutech-integrasi.app/dummy.jpg', 300000);
-
