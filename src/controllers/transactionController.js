@@ -57,6 +57,14 @@ const topup = async (req, res) => {
   let connection;
   
   try {
+    if (!req.body) {
+      return invalidParameterResponse(
+        res,
+        400,
+        'Paramter amount hanya boleh angka dan tidak boleh lebih kecil dari 0'
+      );
+    }
+
     const userEmail = req.user.email;
     const { top_up_amount } = req.body;
 
