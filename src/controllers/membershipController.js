@@ -6,6 +6,14 @@ const { validateEmail, validatePassword } = require('../utils/helpers');
 
 const registration = async (req, res) => {
   try {
+    if (!req.body) {
+      return invalidParameterResponse(
+        res,
+        400,
+        'Paramter email tidak sesuai format'
+      );
+    }
+
     const { email, password, first_name, last_name } = req.body;
 
     if (!email || !password || !first_name || !last_name) {
@@ -83,6 +91,14 @@ const registration = async (req, res) => {
 
 const login = async (req, res) => {
   try {
+    if (!req.body) {
+      return invalidParameterResponse(
+        res,
+        400,
+        'Paramter email tidak sesuai format'
+      );
+    }
+
     const { email, password } = req.body;
 
     if (!email || !password) {
@@ -199,6 +215,14 @@ const getProfile = async (req, res) => {
 
 const updateProfile = async (req, res) => {
   try {
+    if (!req.body) {
+      return invalidParameterResponse(
+        res,
+        400,
+        'Paramter email tidak sesuai format'
+      );
+    }
+
     const userEmail = req.user.email;
     const { first_name, last_name } = req.body;
 
