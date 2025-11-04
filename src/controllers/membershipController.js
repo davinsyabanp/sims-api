@@ -7,16 +7,21 @@ const { validateEmail, validatePassword } = require('../utils/helpers');
 const registration = async (req, res) => {
   try {
     if (!req.body) {
+      console.log('Registration: req.body is undefined');
       return invalidParameterResponse(
         res,
         400,
         'Paramter email tidak sesuai format'
       );
     }
+
+    console.log('Registration request body:', JSON.stringify(req.body));
 
     const { email, password, first_name, last_name } = req.body;
 
-    if (!email || !password || !first_name || !last_name) {
+    // Check if fields are missing or empty (handle empty strings and whitespace)
+    if (!email || typeof email !== 'string' || email.trim() === '') {
+      console.log('Registration: email is missing or empty');
       return invalidParameterResponse(
         res,
         400,
@@ -24,8 +29,42 @@ const registration = async (req, res) => {
       );
     }
 
+    if (!password || typeof password !== 'string' || password.trim() === '') {
+      console.log('Registration: password is missing or empty');
+      return invalidParameterResponse(
+        res,
+        400,
+        'Password minimal 8 karakter'
+      );
+    }
+
+    if (!first_name || typeof first_name !== 'string' || first_name.trim() === '') {
+      console.log('Registration: first_name is missing or empty');
+      return invalidParameterResponse(
+        res,
+        400,
+        'Paramter email tidak sesuai format'
+      );
+    }
+
+    if (!last_name || typeof last_name !== 'string' || last_name.trim() === '') {
+      console.log('Registration: last_name is missing or empty');
+      return invalidParameterResponse(
+        res,
+        400,
+        'Paramter email tidak sesuai format'
+      );
+    }
+
+    // Trim whitespace from inputs
+    const trimmedEmail = email.trim();
+    const trimmedPassword = password.trim();
+    const trimmedFirstName = first_name.trim();
+    const trimmedLastName = last_name.trim();
+
     // Validate email format
-    if (!validateEmail(email)) {
+    if (!validateEmail(trimmedEmail)) {
+      console.log('Registration: email format is invalid:', trimmedEmail);
       return invalidParameterResponse(
         res,
         400,
@@ -34,7 +73,8 @@ const registration = async (req, res) => {
     }
 
     // Validate password length (min 8 characters)
-    if (!validatePassword(password)) {
+    if (!validatePassword(trimmedPassword)) {
+      console.log('Registration: password length is invalid');
       return invalidParameterResponse(
         res,
         400,
@@ -44,10 +84,11 @@ const registration = async (req, res) => {
 
     const [existingUsers] = await pool.query(
       'SELECT id FROM users WHERE email = ?',
-      [email]
+      [trimmedEmail]
     );
 
     if (existingUsers.length > 0) {
+      console.log('Registration: email already exists:', trimmedEmail);
       return invalidParameterResponse(
         res,
         400,
@@ -56,12 +97,14 @@ const registration = async (req, res) => {
     }
 
     const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    const hashedPassword = await bcrypt.hash(trimmedPassword, saltRounds);
 
     await pool.query(
       'INSERT INTO users (email, first_name, last_name, password) VALUES (?, ?, ?, ?)',
-      [email, first_name, last_name, hashedPassword]
+      [trimmedEmail, trimmedFirstName, trimmedLastName, hashedPassword]
     );
+
+    console.log('Registration: user created successfully:', trimmedEmail);
 
     return successResponse(
       res,
