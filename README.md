@@ -107,76 +107,24 @@ Server akan berjalan di `http://localhost:3000`
 - `POST /transaction` - Create payment transaction
 - `GET /transaction/history` - Get transaction history
 
-## Testing
-
-Gunakan Postman atau tools API testing lainnya:
-
-1. **Register User:**
-```bash
-POST http://localhost:3000/registration
-Content-Type: application/json
-
-{
-  "email": "user@example.com",
-  "password": "password123",
-  "first_name": "John",
-  "last_name": "Doe"
-}
-```
-
-2. **Login:**
-```bash
-POST http://localhost:3000/login
-Content-Type: application/json
-
-{
-  "email": "user@example.com",
-  "password": "password123"
-}
-```
-
-3. **Get Profile (with JWT Token):**
-```bash
-GET http://localhost:3000/profile
-Authorization: Bearer <your_jwt_token>
-```
-
 ## Deployment
 
 ### Railway Deployment
 
-Lihat dokumentasi lengkap di [RAILWAY_DEPLOY.md](./RAILWAY_DEPLOY.md) atau [railway-setup.md](./railway-setup.md)
-
-Quick steps:
 1. Push code ke GitHub
 2. Login ke Railway (https://railway.app)
 3. Create new project → Deploy from GitHub
-4. Add MySQL database
-5. Setup environment variables
-6. Deploy!
-
-## Project Structure
-
-```
-sims-api/
-├── database/
-│   ├── schema.sql      # Database schema
-│   └── seed.sql        # Seed data
-├── src/
-│   ├── config/
-│   │   └── database.js # Database configuration
-│   ├── controllers/    # Route controllers
-│   ├── middleware/     # Custom middleware
-│   ├── routes/         # Route definitions
-│   ├── utils/          # Utility functions
-│   └── app.js          # Express app setup
-├── uploads/            # Uploaded files
-├── .env                # Environment variables (not committed)
-├── package.json        # Dependencies
-└── README.md          # This file
-```
-
-## License
-
-ISC
+4. Add MySQL database service
+5. Setup environment variables di Railway dashboard:
+   - `PORT` (default: 3000)
+   - `NODE_ENV=production`
+   - `DB_HOST` (dari Railway MySQL service)
+   - `DB_PORT` (dari Railway MySQL service)
+   - `DB_NAME` (dari Railway MySQL service)
+   - `DB_USER` (dari Railway MySQL service)
+   - `DB_PASSWORD` (dari Railway MySQL service)
+   - `JWT_SECRET` (generate secret key untuk production)
+   - `APP_URL` (URL aplikasi Railway Anda)
+6. Jalankan SQL schema dan seed data pada database MySQL
+7. Deploy!
 
