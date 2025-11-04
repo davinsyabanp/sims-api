@@ -11,16 +11,27 @@ const routes = require('./routes/index');
 // Initialize Express app
 const app = express();
 
-// Security middleware - Helmet helps secure Express apps by setting HTTP headers
-app.use(helmet());
-
-// CORS middleware - Enable Cross-Origin Resource Sharing
+// CORS middleware - Enable Cross-Origin Resource Sharing (must be before other middleware)
 app.use(cors());
 
 // Body parser middleware - Parse JSON request bodies
+// MUST be before routes and other middleware
 // Configure with explicit limits for Express 5 compatibility
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Security middleware - Helmet helps secure Express apps by setting HTTP headers
+// Placed after body parser to avoid conflicts
+app.use(helmet());
+
+// Request logging middleware (for debugging)
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.path}`);
+  console.log('Headers:', JSON.stringify(req.headers));
+  console.log('Content-Type:', req.headers['content-type']);
+  console.log('Body:', req.body ? JSON.stringify(req.body) : 'undefined');
+  next();
+});
 
 // Create uploads directory if it doesn't exist
 const uploadsDir = path.join(__dirname, '../uploads');
