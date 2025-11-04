@@ -1,10 +1,3 @@
-/**
- * MySQL Database Connection Test
- * Tests database connection and displays database information
- * 
- * Usage: node test-connection.js
- */
-
 const pool = require('./src/config/database');
 require('dotenv').config();
 

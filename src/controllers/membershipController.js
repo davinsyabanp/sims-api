@@ -4,18 +4,10 @@ const pool = require('../config/database');
 const { successResponse, invalidParameterResponse, invalidCredentialsResponse } = require('../utils/response');
 const { validateEmail, validatePassword } = require('../utils/helpers');
 
-/**
- * POST /registration
- * Register a new user
- * 
- * Request Body: { email, password, first_name, last_name }
- * Response: { status: 0, message: "Registrasi berhasil silahkan login", data: null }
- */
 const registration = async (req, res) => {
   try {
     const { email, password, first_name, last_name } = req.body;
 
-    // Validate required fields
     if (!email || !password || !first_name || !last_name) {
       return invalidParameterResponse(
         res,
@@ -42,7 +34,6 @@ const registration = async (req, res) => {
       );
     }
 
-    // Check if email already exists using raw SQL with prepared statement
     const [existingUsers] = await pool.query(
       'SELECT id FROM users WHERE email = ?',
       [email]
@@ -56,18 +47,14 @@ const registration = async (req, res) => {
       );
     }
 
-    // Hash password with bcrypt
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    // Insert user to database using raw SQL with prepared statement
-    // Trigger will auto-create balance record
     await pool.query(
       'INSERT INTO users (email, first_name, last_name, password) VALUES (?, ?, ?, ?)',
       [email, first_name, last_name, hashedPassword]
     );
 
-    // Return exact Swagger response
     return successResponse(
       res,
       200,
@@ -78,7 +65,6 @@ const registration = async (req, res) => {
   } catch (error) {
     console.error('Registration error:', error);
     
-    // Handle duplicate email error
     if (error.code === 'ER_DUP_ENTRY') {
       return invalidParameterResponse(
         res,
@@ -87,7 +73,6 @@ const registration = async (req, res) => {
       );
     }
 
-    // Handle other errors
     return invalidParameterResponse(
       res,
       400,
@@ -96,18 +81,10 @@ const registration = async (req, res) => {
   }
 };
 
-/**
- * POST /login
- * User login and get JWT token
- * 
- * Request Body: { email, password }
- * Response: { status: 0, message: "Login Sukses", data: { token: "..." } }
- */
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Validate required fields
     if (!email || !password) {
       return invalidParameterResponse(
         res,
@@ -116,7 +93,6 @@ const login = async (req, res) => {
       );
     }
 
-    // Validate email format
     if (!validateEmail(email)) {
       return invalidParameterResponse(
         res,
@@ -125,7 +101,6 @@ const login = async (req, res) => {
       );
     }
 
-    // Validate password length (min 8 characters)
     if (!validatePassword(password)) {
       return invalidParameterResponse(
         res,
@@ -134,13 +109,11 @@ const login = async (req, res) => {
       );
     }
 
-    // Get user by email using raw SQL with prepared statement
     const [users] = await pool.query(
       'SELECT id, email, password FROM users WHERE email = ?',
       [email]
     );
 
-    // Check if user exists
     if (users.length === 0) {
       return invalidCredentialsResponse(
         res,
@@ -150,8 +123,6 @@ const login = async (req, res) => {
     }
 
     const user = users[0];
-
-    // Compare password with bcrypt
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
@@ -162,14 +133,12 @@ const login = async (req, res) => {
       );
     }
 
-    // Generate JWT token with email in payload, 12h expiry
     const token = jwt.sign(
       { email: user.email },
       process.env.JWT_SECRET,
       { expiresIn: '12h' }
     );
 
-    // Return exact Swagger response with token
     return successResponse(
       res,
       200,
@@ -187,19 +156,10 @@ const login = async (req, res) => {
   }
 };
 
-/**
- * GET /profile
- * Get user profile
- * 
- * Headers: Authorization: Bearer {token}
- * Response: { status: 0, message: "Sukses", data: { email, first_name, last_name, profile_image } }
- */
 const getProfile = async (req, res) => {
   try {
-    // Get user email from req.user (from auth middleware)
     const userEmail = req.user.email;
 
-    // Query user data by email using raw SQL with prepared statement
     const [users] = await pool.query(
       'SELECT email, first_name, last_name, profile_image FROM users WHERE email = ?',
       [userEmail]
@@ -215,7 +175,6 @@ const getProfile = async (req, res) => {
 
     const user = users[0];
 
-    // Return user profile (exclude password) with exact Swagger format
     return successResponse(
       res,
       200,
@@ -238,21 +197,11 @@ const getProfile = async (req, res) => {
   }
 };
 
-/**
- * PUT /profile/update
- * Update user profile (first_name and last_name only)
- * 
- * Headers: Authorization: Bearer {token}
- * Request Body: { first_name, last_name }
- * Response: { status: 0, message: "Update Pofile berhasil", data: { email, first_name, last_name, profile_image } }
- */
 const updateProfile = async (req, res) => {
   try {
-    // Get user email from req.user
     const userEmail = req.user.email;
     const { first_name, last_name } = req.body;
 
-    // Validate required fields
     if (!first_name || !last_name) {
       return invalidParameterResponse(
         res,
@@ -261,13 +210,11 @@ const updateProfile = async (req, res) => {
       );
     }
 
-    // Update first_name and last_name only using raw SQL with prepared statement
     await pool.query(
       'UPDATE users SET first_name = ?, last_name = ? WHERE email = ?',
       [first_name, last_name, userEmail]
     );
 
-    // Get updated user data
     const [users] = await pool.query(
       'SELECT email, first_name, last_name, profile_image FROM users WHERE email = ?',
       [userEmail]
@@ -283,8 +230,6 @@ const updateProfile = async (req, res) => {
 
     const user = users[0];
 
-    // Return updated profile with exact Swagger format
-    // Note: Swagger message has typo "Update Pofile berhasil" (not "Profile")
     return successResponse(
       res,
       200,
@@ -307,20 +252,10 @@ const updateProfile = async (req, res) => {
   }
 };
 
-/**
- * PUT /profile/image
- * Update user profile image
- * 
- * Headers: Authorization: Bearer {token}
- * Request: multipart/form-data with field name "file"
- * Response: { status: 0, message: "Update Profile Image berhasil", data: { email, first_name, last_name, profile_image } }
- */
 const updateProfileImage = async (req, res) => {
   try {
-    // Get user email from req.user
     const userEmail = req.user.email;
 
-    // Get uploaded file from req.file (multer)
     if (!req.file) {
       return invalidParameterResponse(
         res,
@@ -330,18 +265,14 @@ const updateProfileImage = async (req, res) => {
     }
 
     const filename = req.file.filename;
-
-    // Build full image URL: APP_URL + /uploads/ + filename
     const appUrl = process.env.APP_URL || 'http://localhost:3000';
     const imageUrl = `${appUrl}/uploads/${filename}`;
 
-    // Update profile_image in database using raw SQL with prepared statement
     await pool.query(
       'UPDATE users SET profile_image = ? WHERE email = ?',
       [imageUrl, userEmail]
     );
 
-    // Get updated user data
     const [users] = await pool.query(
       'SELECT email, first_name, last_name, profile_image FROM users WHERE email = ?',
       [userEmail]
@@ -357,7 +288,6 @@ const updateProfileImage = async (req, res) => {
 
     const user = users[0];
 
-    // Return updated profile with exact Swagger format
     return successResponse(
       res,
       200,
@@ -380,7 +310,6 @@ const updateProfileImage = async (req, res) => {
   }
 };
 
-// Export all controller functions
 module.exports = {
   registration,
   login,
